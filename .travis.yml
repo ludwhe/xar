@@ -1,0 +1,30 @@
+addons:
+  sonarcloud:
+    organization: "ludwhe"
+    token:
+      secure: "Dw+t5lBD/ilwtGE5cXXbJ3lERJgZw8j4YtfXZKFsm2yO8tOGDIV/HBUH+cLiwn78gMwf9b1JDxxrZMmEvSMQFghvgOOmDTfJdAjf69DvULTjSTDRy+D+LM52mEKeuEoFo4NPDJUKWHD580bauJYCnGzRZXUb9kGBXiU/IY1Tm6WhrESi4f0ppuqBFAOUhMkMLQmqQzy3XFWcV1pLOYlSRdI7KPg6kaaOE13KOq35KRsv7n/7svKHm5Q07X6o7iDv4NJ3jrqYbknc+dEjFnFfu48eSmlSBiHYwkcI2315MHbC9CVyBFZKgf53RnpaXatLVE4pE8eo2bLuMCEq+AnRebdKhLFjAPQ9DH1IOyND/OGTB98nKell7SSjfu7KORTcpmQ8dKmxAVsISN4AWhfY/G7PMDgkoWa6QBw78PU2Gzrz1hGgCfS7nFs4lst2uFa9wDUrwoCETd+cp2PJVXABd5aw1sngm888rgI/sPWPZHatDJe9HwPdPrxakpajRn6SCGSDDU2Kt5XofzA/ka2ooCtxUEbO8P6j+WH9GURZiaUGwfIObRkWePfO1jG034Sl3TsBU6s50rqHCLYkPxzhYnI0NAxerYi7DhFwAVRCLQUIay8Wgq9QGyEptLek6gobkHujiLSEbjAxvw3lF1u4pYYE8qe3aLAHWTIexU1Of7I="
+dist: bionic
+
+jobs:
+  include:
+    - stage: xar
+      script:
+        - pushd xar
+        - ./autogen.sh
+        - build-wrapper-linux-x86-64 --out-dir ../bw-output make
+        - sudo make install
+        - popd
+        - sonar-scanner
+    - stage: tools
+      script:
+        - pushd tools
+        - build-wrapper-linux-x86-64 --out-dir ../bw-output make
+        - popd
+
+language: c
+os: linux
+
+stages:
+  - xar
+  - name: tools
+    if: true is false # ignore tools for now as they have never built

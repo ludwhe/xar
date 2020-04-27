@@ -1,6 +1,10 @@
 CFLAGS = -g `xml2-config --cflags`
-LDFLAGS = -lxar `xml2-config --libs` -lcrypto 
+LDFLAGS = -lxar `xml2-config --libs` -lcrypto
+
 all: xardiff vitoc toc_extract
+
+.PHONY: all clean
+
 xardiff: xardiff.o
 strextract: strextract.o
 vitoc: vitoc.o

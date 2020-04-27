@@ -1,0 +1,17 @@
+name: C CI
+
+on: [ push ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: autogen and configure
+      run: ./autogen.sh
+      working-directory: ./xar
+    - name: make
+      run: make
+      working-directory: ./xar
