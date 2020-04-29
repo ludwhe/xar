@@ -234,7 +234,7 @@ static char* xar_format_hash(const unsigned char* m,unsigned int len) {
 	result[0] = '\0';
 	
 	for(itr = 0;itr < len;itr++){
-		sprintf(hexValue,"%02x",m[itr]);
+		snprintf(hexValue, 2, "%02x", m[itr]);
 		strncat(result,hexValue,2);
 	}
 		

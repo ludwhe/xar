@@ -43,7 +43,7 @@ setup(
         description = 'Python bindings for XAR, the eXtensible ARchiver', 
         author = 'Will Barton',
         author_email = 'wb@willbarton.com',
-        url = 'http://code.google.com/p/xar',
+        url = 'https://code.google.com/archive/p/xar/',
         license = 'BSD',
         ext_modules = [xarfile],
         cmdclass = {'build_ext':build_ext}

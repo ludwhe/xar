@@ -516,7 +516,7 @@ int xar_close(xar_t x) {
 			xar_prop_set(XAR_FILE(x), "checksum", NULL);
 			EVP_DigestInit_ex(XAR(x)->toc_ctx, md, NULL);
 			xar_attr_set(XAR_FILE(x), "checksum", "style", md_name);
-			sprintf(mdlenstr, "%d", EVP_MD_size(md));
+			snprintf(mdlenstr, 31, "%d", EVP_MD_size(md));
 			xar_prop_set(XAR_FILE(x), "checksum/size", mdlenstr);
 			xar_prop_set(XAR_FILE(x), "checksum/offset", "0");
 			XAR(x)->docksum = 1;
@@ -762,7 +762,7 @@ int xar_close(xar_t x) {
 			wbytes = r;
 			off = 0;
 			do {
-				r = (int)write(XAR(x)->fd, ((char *)rbuf)+off, wbytes);
+				r = (int)write(XAR(x)->fd, ((char *)rbuf)+off, rsize - off);
 				if( (r < 0 ) && (errno == EINTR) )
 					continue;
 				if( r < 0 ) {
