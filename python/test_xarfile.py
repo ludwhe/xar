@@ -48,7 +48,7 @@ subdoc = '''<?xml version='1.0' encoding="UTF-8"?>
     </somens:parent>
 </myns:document>'''
 
-def makeTestFile(dir = ""):
+def make_test_file(dir = ""):
     """ Create a test file, filled with random data. """
     fd, name = tempfile.mkstemp(dir = dir)
     testfile = os.fdopen(fd, "w+b")
@@ -68,7 +68,7 @@ class XarArchiveTestCase(unittest.TestCase):
         self.test_subdoc = xarfile.XarSubdoc("testdoc", subdoc)
          
         # A single file to xar up
-        self.test_file = makeTestFile(dir = os.path.join(os.sep,
+        self.test_file = make_test_file(dir = os.path.join(os.sep,
             tempfile.gettempprefix()))
             
         # A non-existent filename
@@ -79,8 +79,8 @@ class XarArchiveTestCase(unittest.TestCase):
         # XXX: Robustify this to include multiple levels of directories
         self.test_dir = tempfile.mkdtemp()
         self.test_files = []
-        for i in xrange(2):
-            self.test_files.append(makeTestFile(dir = self.test_dir))
+        for _ in xrange(2):
+            self.test_files.append(make_test_file(dir = self.test_dir))
         self.test_members = self.test_files + \
                 [tempfile.gettempprefix(), self.test_dir, self.test_file]
         self.test_members = map(lambda m: m.lstrip(os.sep), self.test_members)
@@ -207,8 +207,8 @@ class XarArchiveReadTestCase(XarArchiveTestCase):
 
     def testGetSubdocs(self):
         subdocs = self.xarf.getsubdocs() # Should succeed
-        #self.failUnless(self.test_subdoc in subdocs)
-        #self.failUnless(XarSubdoc("dnedoc", subdoc) not in subdocs)
+        self.failUnless(self.test_subdoc in subdocs)
+        self.failUnless(xarfile.XarSubdoc("dnedoc", subdoc) not in subdocs)
 
     def testGetSubdocNames(self):
         names = self.xarf.getsubdocnames() # Should succeed

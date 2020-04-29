@@ -1,6 +1,6 @@
 # eXtensible ARchiver
 
-![C CI](https://github.com/ludwhe/xar/workflows/C%20CI/badge.svg)
+![xar CI](https://github.com/ludwhe/xar/workflows/C%20CI/badge.svg)
 [![Build Status](https://travis-ci.com/ludwhe/xar.svg?branch=master)](https://travis-ci.com/ludwhe/xar)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ludwhe_xar&metric=alert_status)](https://sonarcloud.io/dashboard?id=ludwhe_xar)
 
