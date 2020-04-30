@@ -245,7 +245,10 @@ xar_t xar_open(const char *file, int32_t flags)
 	OpenSSL_add_all_digests();
 
 	if (flags) {
-		char *tmp1, *tmp2, *tmp3, *tmp4;
+		char *tmp1;
+		char *tmp2;
+		char *tmp3;
+		char *tmp4;
 		tmp1 = tmp2 = strdup(file);
 		tmp3 = dirname(tmp2);
 		XAR(ret)->dirname = strdup(tmp3);
@@ -344,8 +347,8 @@ xar_t xar_open(const char *file, int32_t flags)
 
 		default:
 			/* nothing to do */
-			;
-		};
+			break;
+		}
 
 		switch (XAR(ret)->header.cksum_alg) {
 		case XAR_CKSUM_NONE:
@@ -354,6 +357,7 @@ xar_t xar_open(const char *file, int32_t flags)
 		case XAR_CKSUM_MD5:
 		case XAR_CKSUM_SHA1:
 		case XAR_CKSUM_OTHER:
+			__attribute((fallthrough));
 			md = EVP_get_digestbyname(XAR(ret)->header.toc_cksum_name);
 
 			if (md) {
@@ -362,11 +366,14 @@ xar_t xar_open(const char *file, int32_t flags)
 				break;
 			}
 
-		/* else fall through */
+#ifdef __cplusplus
+			[[fallthrough]];
+#endif
+
 		default:
 			fprintf(stderr, "Unknown hashing algorithm, skipping\n");
 			break;
-		};
+		}
 
 		if (xar_unserialize(ret) != 0) {
 			xar_close(ret);
@@ -512,7 +519,8 @@ int xar_close(xar_t x)
 {
 	xar_attr_t a;
 	xar_file_t f;
-	int ret, retval = 0;
+	int ret;
+	int retval = 0;
 
 	if (XAR(x)->heap_fd == -2)
 		goto CLOSE_BAIL;
@@ -520,11 +528,18 @@ int xar_close(xar_t x)
 	/* If we're creating an archive */
 	if (XAR(x)->heap_fd != -1) {
 		char *tmpser;
-		void *rbuf, *wbuf = NULL;
-		int fd, r, off, wbytes, rbytes;
-		long rsize, wsize;
+		void *rbuf;
+		void *wbuf = NULL;
+		int fd;
+		int r;
+		int off;
+		int wbytes;
+		int rbytes;
+		long rsize;
+		long wsize;
 		z_stream zs;
-		uint64_t ungztoc, gztoc;
+		uint64_t ungztoc;
+		uint64_t gztoc;
 		unsigned char chkstr[HASH_MAX_MD_SIZE];
 		int tocfd;
 		char timestr[128];
@@ -1019,7 +1034,8 @@ int32_t xar_opt_set(xar_t x, const char *option, const char *value)
  */
 int32_t xar_opt_unset(xar_t x, const char *option)
 {
-	xar_attr_t i, p = NULL;
+	xar_attr_t i;
+	xar_attr_t p = NULL;
 
 	for (i = XAR(x)->attrs; i ; p = i, i = XAR_ATTR(i)->next) {
 		if (strcmp(XAR_ATTR(i)->key, option) == 0) {
@@ -1091,7 +1107,8 @@ static xar_file_t xar_add_node(xar_t x, xar_file_t f, const char *name, const ch
 		path = XAR_FILE(f)->fspath;
 
 		if (strcmp(prefix, "../") == 0) {
-			size_t len1, len2;
+			size_t len1;
+			size_t len2;
 			len1 = strlen(path);
 			len2 = strlen(name);
 
@@ -1194,7 +1211,8 @@ static xar_file_t xar_add_pseudodir(xar_t x, xar_file_t f, const char *name, con
 		path = XAR_FILE(f)->fspath;
 
 		if (strcmp(prefix, "../") == 0) {
-			size_t len1, len2;
+			size_t len1;
+			size_t len2;
 			len1 = strlen(path);
 			len2 = strlen(name);
 
@@ -1237,8 +1255,13 @@ static xar_file_t xar_add_pseudodir(xar_t x, xar_file_t f, const char *name, con
  */
 static xar_file_t xar_add_r(xar_t x, xar_file_t f, const char *path, const char *prefix)
 {
-	xar_file_t i = NULL, ret, ret2, start = NULL;
-	char *tmp1, *tmp2, *tmp3;
+	xar_file_t i = NULL;
+	xar_file_t ret;
+	xar_file_t ret2;
+	xar_file_t start = NULL;
+	char *tmp1;
+	char *tmp2;
+	char *tmp3;
 
 	if (path && (path[0] == '\0'))
 		return f;
@@ -1683,8 +1706,12 @@ int32_t xar_extract(xar_t x, xar_file_t f)
 	const char *fspath;
 	fspath = XAR_FILE(f)->fspath;
 
-	if (XAR(x)->stripcomps && (fspath = xar_strip_components(fspath, XAR(x)->stripcomps)) == NULL)
-		return -1;
+	if (XAR(x)->stripcomps) {
+		fspath = xar_strip_components(fspath, XAR(x)->stripcomps);
+
+		if (fspath == NULL)
+			return -1;
+		}
 
 	if (XAR(x)->tostdout) {
 		char *buffer = NULL;

@@ -102,10 +102,10 @@ int32_t xar_linuxattr_read(xar_t x, xar_file_t f, void *buf, size_t len, void *c
 		int r;
 		LINUXATTR_CONTEXT(context)->bufsz = 1024;
 AGAIN2:
-		LINUXATTR_CONTEXT(context)->buf = malloc(LINUXATTR_CONTEXT(context)->bufsz);
 
-		if (!LINUXATTR_CONTEXT(context)->buf)
-			goto AGAIN2;
+		do {
+			LINUXATTR_CONTEXT(context)->buf = malloc(LINUXATTR_CONTEXT(context)->bufsz);
+		} while (!LINUXATTR_CONTEXT(context)->buf);
 
 		memset(LINUXATTR_CONTEXT(context)->buf, 0, LINUXATTR_CONTEXT(context)->bufsz);
 		r = lgetxattr(LINUXATTR_CONTEXT(context)->file, LINUXATTR_CONTEXT(context)->attrname, LINUXATTR_CONTEXT(context)->buf, LINUXATTR_CONTEXT(context)->bufsz);
@@ -174,10 +174,10 @@ int32_t xar_linuxattr_archive(xar_t x, xar_file_t f, const char *file, const cha
 		return 0;
 
 TRYAGAIN:
-	buf = malloc(bufsz);
 
-	if (!buf)
-		goto TRYAGAIN;
+	do {
+		buf = malloc(bufsz);
+	} while (!buf);
 
 	ret = llistxattr(file, buf, bufsz);
 

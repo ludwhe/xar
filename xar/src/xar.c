@@ -120,7 +120,8 @@ static const struct HashType HashTypes[] = {
 static unsigned long xar_lib_version = 0;
 static int xar_lib_version_fetched = 0;
 
-static struct HashType CustomTocHash, CustomFileHash;
+static struct HashType CustomTocHash;
+static struct HashType CustomFileHash;
 
 static int Perms = 0;
 static int Local = 0;
@@ -257,7 +258,6 @@ static void add_subdoc(xar_t x)
 	}
 
 	xar_subdoc_copyin(s, buf, len);
-	return;
 }
 
 static void extract_subdoc(xar_t x, const char *name)
@@ -268,7 +268,8 @@ static void extract_subdoc(xar_t x, const char *name)
 	for (i = xar_subdoc_first(x); i; i = xar_subdoc_next(i)) {
 		const char *sname = xar_subdoc_name(i);
 		unsigned char *sdoc;
-		int fd, size;
+		int fd;
+		int size;
 
 		if (name && strcmp(name, sname) != 0)
 			continue;
