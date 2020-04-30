@@ -1,4 +1,4 @@
-/* 
+/*
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,66 +44,71 @@
 #include "filetree.h"
 #include "arcmod.h"
 
-struct _script_context{
+struct _script_context {
 	int initted;
 };
 
 #define SCRIPT_CONTEXT(x) ((struct _script_context*)(*x))
 
-int32_t xar_script_in(xar_t x, xar_file_t f, xar_prop_t p, void **in, size_t *inlen, void **context) {
+int32_t xar_script_in(xar_t x, xar_file_t f, xar_prop_t p, void **in, size_t *inlen, void **context)
+{
 	char *buf = *in;
 	xar_prop_t tmpp;
 
-	if(!SCRIPT_CONTEXT(context)){
-		*context = calloc(1,sizeof(struct _script_context));
-	}
+	if (!SCRIPT_CONTEXT(context))
+		*context = calloc(1, sizeof(struct _script_context));
 
-	if( SCRIPT_CONTEXT(context)->initted )
+	if (SCRIPT_CONTEXT(context)->initted)
 		return 0;
 
-	if( !xar_check_prop(x, "contents") )
+	if (!xar_check_prop(x, "contents"))
 		return 0;
 
-	/* Sanity check *inlen, which really shouldn't be more than a 
+	/* Sanity check *inlen, which really shouldn't be more than a
 	 * few kbytes...
 	 */
-	if( *inlen > INT_MAX )
+	if (*inlen > INT_MAX)
 		return 0;
 
 	/*We only run on the begining of the file, so once we init, we don't run again*/
 	SCRIPT_CONTEXT(context)->initted = 1;
-	
-	if( (*inlen > 2) && (buf[0] == '#') && (buf[1] == '!') ) {
+
+	if ((*inlen > 2) && (buf[0] == '#') && (buf[1] == '!')) {
 		char *exe;
 		int i;
-
 		exe = malloc(*inlen);
-		if( !exe )
+
+		if (!exe)
 			return -1;
+
 		memset(exe, 0, *inlen);
-		
-		for(i = 2; ((size_t)i < *inlen) && (buf[i] != '\0') && (buf[i] != '\n') && (buf[i] != ' '); ++i) {
-			exe[i-2] = buf[i];
-		}
+
+		for (i = 2; ((size_t)i < *inlen) && (buf[i] != '\0') && (buf[i] != '\n') && (buf[i] != ' '); ++i)
+			exe[i - 2] = buf[i];
 
 		tmpp = xar_prop_pset(f, p, "contents", NULL);
-		if( tmpp ) {
+
+		if (tmpp) {
 			xar_prop_pset(f, tmpp, "type", "script");
 			xar_prop_pset(f, tmpp, "interpreter", exe);
 		}
+
 		free(exe);
 	}
+
 	return 0;
 }
 
-int32_t xar_script_done(xar_t x, xar_file_t f, xar_prop_t p, void **context) {
+int32_t xar_script_done(xar_t x, xar_file_t f, xar_prop_t p, void **context)
+{
+	(void)x;
+	(void)f;
+	(void)p;
 
-	(void)x; (void)f; (void)p;
-	if(!SCRIPT_CONTEXT(context)){
+	if (!SCRIPT_CONTEXT(context))
 		return 0;
-	}
-		
-	if( *context ){
+
+	if (*context) {
 		free(*context);
 		*context = NULL;
 	}

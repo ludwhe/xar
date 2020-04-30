@@ -40,7 +40,7 @@
 
 #include "xar.h"
 
-struct __xar_x509cert_t{
+struct __xar_x509cert_t {
 	uint8_t *content;
 	int32_t	len;
 	struct __xar_x509cert_t *next;

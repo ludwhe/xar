@@ -43,14 +43,16 @@
 #include "archive.h"
 #include "filetree.h"
 
-xar_subdoc_t xar_subdoc_new(xar_t x, const char *name) {
+xar_subdoc_t xar_subdoc_new(xar_t x, const char *name)
+{
 	xar_subdoc_t ret;
 
-	if( xar_subdoc_find(x, name) )
+	if (xar_subdoc_find(x, name))
 		return NULL;
 
 	ret = malloc(sizeof(struct __xar_subdoc_t));
-	if( ! ret )
+
+	if (! ret)
 		return NULL;
 
 	memset(XAR_SUBDOC(ret), 0, sizeof(struct __xar_subdoc_t));
@@ -58,35 +60,41 @@ xar_subdoc_t xar_subdoc_new(xar_t x, const char *name) {
 	XAR_SUBDOC(ret)->next = XAR_SUBDOC(XAR(x)->subdocs);
 	XAR(x)->subdocs = ret;
 	XAR_SUBDOC(ret)->x = x;
-
 	return ret;
 }
 
-int32_t xar_subdoc_prop_set(xar_subdoc_t s, const char *key, const char *value){
+int32_t xar_subdoc_prop_set(xar_subdoc_t s, const char *key, const char *value)
+{
 	return xar_prop_set((xar_file_t)s, key, value);
 }
 
-int32_t xar_subdoc_prop_get(xar_subdoc_t s, const char *key, const char **value) {
+int32_t xar_subdoc_prop_get(xar_subdoc_t s, const char *key, const char **value)
+{
 	return xar_prop_get((xar_file_t)s, key, value);
 }
 
-int32_t xar_subdoc_attr_set(xar_subdoc_t s, const char *prop, const char *key, const char *value){
+int32_t xar_subdoc_attr_set(xar_subdoc_t s, const char *prop, const char *key, const char *value)
+{
 	return xar_attr_set((xar_file_t)s, prop, key, value);
 }
 
-const char *xar_subdoc_attr_get(xar_subdoc_t s, const char *prop, const char *key) {
+const char *xar_subdoc_attr_get(xar_subdoc_t s, const char *prop, const char *key)
+{
 	return xar_attr_get((xar_file_t)s, prop, key);
 }
 
-xar_subdoc_t xar_subdoc_first(xar_t x) {
+xar_subdoc_t xar_subdoc_first(xar_t x)
+{
 	return XAR(x)->subdocs;
 }
 
-xar_subdoc_t xar_subdoc_next(xar_subdoc_t s) {
+xar_subdoc_t xar_subdoc_next(xar_subdoc_t s)
+{
 	return XAR_SUBDOC(s)->next;
 }
 
-const char *xar_subdoc_name(xar_subdoc_t s) {
+const char *xar_subdoc_name(xar_subdoc_t s)
+{
 	return XAR_SUBDOC(s)->name;
 }
 
@@ -94,38 +102,41 @@ xar_subdoc_t xar_subdoc_find(xar_t x, const char *name)
 {
 	xar_subdoc_t i;
 
-	for(i = XAR(x)->subdocs; i; i = XAR_SUBDOC(i)->next) {
-		if( strcmp(name, XAR_SUBDOC(i)->name) == 0 )
+	for (i = XAR(x)->subdocs; i; i = XAR_SUBDOC(i)->next) {
+		if (strcmp(name, XAR_SUBDOC(i)->name) == 0)
 			return i;
 	}
 
 	return NULL;
 }
 
-int32_t xar_subdoc_copyout(xar_subdoc_t s, unsigned char **ret, unsigned int *size) {
+int32_t xar_subdoc_copyout(xar_subdoc_t s, unsigned char **ret, unsigned int *size)
+{
 	xmlBufferPtr buf;
 	xmlTextWriterPtr writer;
-
 	buf = xmlBufferCreate();
-	if( !buf )
+
+	if (!buf)
 		return -1;
 
 	writer = xmlNewTextWriterMemory(buf, 0);
-	if( !writer ) {
+
+	if (!writer) {
 		xmlBufferFree(buf);
 		return -1;
 	}
 
 	xmlTextWriterSetIndent(writer, 4);
 	xar_subdoc_serialize(s, writer, 0);
-
 	xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);
 
-	if( size != NULL )
+	if (size != NULL)
 		*size = buf->use;
+
 	*ret = malloc(buf->size);
-	if( *ret == NULL ) {
+
+	if (*ret == NULL) {
 		xmlBufferFree(buf);
 		return -1;
 	}
@@ -136,11 +147,12 @@ int32_t xar_subdoc_copyout(xar_subdoc_t s, unsigned char **ret, unsigned int *si
 	return 0;
 }
 
-int32_t xar_subdoc_copyin(xar_subdoc_t s, const unsigned char *buf, unsigned int len) {
+int32_t xar_subdoc_copyin(xar_subdoc_t s, const unsigned char *buf, unsigned int len)
+{
 	xmlTextReaderPtr reader;
-
 	reader = xmlReaderForMemory((const char *)buf, len, NULL, NULL, 0);
-	if( !reader )
+
+	if (!reader)
 		return -1;
 
 	xar_subdoc_unserialize(s, reader);
@@ -156,62 +168,72 @@ int32_t xar_subdoc_copyin(xar_subdoc_t s, const unsigned char *buf, unsigned int
  * for placement in the xml header of an archive, or if we are trying to
  * reconstruct the original document.  1 for wrapping, 0 for original.
  */
-void xar_subdoc_serialize(xar_subdoc_t s, xmlTextWriterPtr writer, int wrap) {
-	if( !s ) return;
-	if( wrap ) {
+void xar_subdoc_serialize(xar_subdoc_t s, xmlTextWriterPtr writer, int wrap)
+{
+	if (!s)
+		return;
+
+	if (wrap) {
 		xmlTextWriterStartElementNS(writer, BAD_CAST(XAR_SUBDOC(s)->prefix), BAD_CAST("subdoc"), BAD_CAST(XAR_SUBDOC(s)->ns));
 		xmlTextWriterWriteAttribute(writer, BAD_CAST("subdoc_name"), BAD_CAST(XAR_SUBDOC(s)->name));
-		if( XAR_SUBDOC(s)->value )
+
+		if (XAR_SUBDOC(s)->value)
 			xmlTextWriterWriteString(writer, BAD_CAST(XAR_SUBDOC(s)->value));
 	}
+
 	xar_prop_serialize(XAR_SUBDOC(s)->props, writer);
 	xmlTextWriterEndElement(writer);
 }
 
-void xar_subdoc_remove(xar_subdoc_t s) {
+void xar_subdoc_remove(xar_subdoc_t s)
+{
 	xar_prop_t p;
 	xar_subdoc_t tmp = xar_subdoc_first(XAR_SUBDOC(s)->x);
 
-	if( tmp == s ) {
+	if (tmp == s)
 		XAR(XAR_SUBDOC(s)->x)->subdocs = XAR_SUBDOC(s)->next;
-	} else {
-		while(XAR_SUBDOC(tmp)->next) {
-			if( XAR_SUBDOC(tmp)->next == s ) {
+	else {
+		while (XAR_SUBDOC(tmp)->next) {
+			if (XAR_SUBDOC(tmp)->next == s) {
 				XAR_SUBDOC(tmp)->next = XAR_SUBDOC(s)->next;
 				break;
 			}
+
 			tmp = xar_subdoc_next(tmp);
 		}
 	}
 
-	while(XAR_SUBDOC(s)->props) {
+	while (XAR_SUBDOC(s)->props) {
 		p = XAR_SUBDOC(s)->props;
 		XAR_SUBDOC(s)->props = XAR_PROP(XAR_PROP(p)->next);
 		xar_prop_free(p);
 	}
+
 	free((char *)XAR_SUBDOC(s)->blank1);
 	free((char *)XAR_SUBDOC(s)->name);
 	free((void *)s);
 	return;
 }
 
-void xar_subdoc_unserialize(xar_subdoc_t s, xmlTextReaderPtr reader) {
+void xar_subdoc_unserialize(xar_subdoc_t s, xmlTextReaderPtr reader)
+{
 	int type;
 
-	while( xmlTextReaderRead(reader) == 1 ) {
+	while (xmlTextReaderRead(reader) == 1) {
 		type = xmlTextReaderNodeType(reader);
-		if( type == XML_READER_TYPE_ELEMENT ) {
+
+		if (type == XML_READER_TYPE_ELEMENT)
 			xar_prop_unserialize((xar_file_t)s, NULL, reader);
-		}
-		if( type == XML_READER_TYPE_TEXT ) {
+
+		if (type == XML_READER_TYPE_TEXT) {
 			const char *value;
 			value = (const char *)xmlTextReaderConstValue(reader);
-			free((char*)XAR_SUBDOC(s)->value);
+			free((char *)XAR_SUBDOC(s)->value);
 			XAR_SUBDOC(s)->value = strdup(value);
 		}
-		if( type == XML_READER_TYPE_END_ELEMENT ) {
+
+		if (type == XML_READER_TYPE_END_ELEMENT)
 			break;
-		}
 	}
 
 	return;

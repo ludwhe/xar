@@ -20,55 +20,60 @@ int main(int argc, char *argv[])
 	xar_t x;
 	xar_file_t f, f2;
 
-	if( argc < 2 ) {
+	if (argc < 2) {
 		fprintf(stderr, "usage: %s <filename>\n", argv[0]);
 		exit(1);
 	}
 
 	fd = open(argv[1], O_RDONLY);
-	if( fd < 0 ) {
+
+	if (fd < 0) {
 		fprintf(stderr, "Unable to open file %s\n", argv[1]);
 		exit(2);
 	}
 
-	if( fstat(fd, &sb) < 0 ) {
+	if (fstat(fd, &sb) < 0) {
 		fprintf(stderr, "Unable to stat file %s\n", argv[1]);
 		exit(3);
 	}
 
 	buffer = malloc(sb.st_size);
-	if( buffer == NULL ) {
+
+	if (buffer == NULL) {
 		fprintf(stderr, "Unable to allocate memory\n");
 		exit(4);
 	}
 
 	red = read(fd, buffer, sb.st_size);
-	if( red <= 0 ) {
+
+	if (red <= 0) {
 		fprintf(stderr, "Error reading from file\n");
 		exit(5);
 	}
-	if( red < sb.st_size )
+
+	if (red < sb.st_size)
 		fprintf(stderr, "Incomplete read\n");
 
 	x = xar_open("/tmp/test.xar", WRITE);
- 	if( x == NULL ) {
+
+	if (x == NULL) {
 		fprintf(stderr, "Error creating xarchive\n");
 		exit(6);
 	}
 
 	xar_register_errhandler(x, err_callback, NULL);
-
 	memset(&sb, 0, sizeof(sb));
-
 	sb.st_mode = S_IFDIR | S_IRWXU;
 	f = xar_add_folder(x, NULL, "mydir", &sb);
-	if( !f ) {
+
+	if (!f) {
 		fprintf(stderr, "Error adding parent to archive\n");
 		exit(7);
 	}
 
 	f2 = xar_add_frombuffer(x, f, "secondfile", buffer, red);
-	if( !f ) {
+
+	if (!f) {
 		fprintf(stderr, "Error adding child to archive\n");
 		exit(8);
 	}

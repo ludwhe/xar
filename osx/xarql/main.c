@@ -38,18 +38,17 @@
 
 // The thumbnail generation function to be implemented in GenerateThumbnailForURL.c
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize);
-void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbnail);
+void CancelThumbnailGeneration(void *thisInterface, QLThumbnailRequestRef thumbnail);
 
 // The preview generation function to be implemented in GeneratePreviewForURL.c
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options);
 void CancelPreviewGeneration(void *thisInterface, QLPreviewRequestRef preview);
 
 // The layout for an instance of QuickLookGeneratorPlugIn
-typedef struct __QuickLookGeneratorPluginType
-{
-    void        *conduitInterface;
-    CFUUIDRef    factoryID;
-    UInt32       refCount;
+typedef struct __QuickLookGeneratorPluginType {
+	void        *conduitInterface;
+	CFUUIDRef    factoryID;
+	UInt32       refCount;
 } QuickLookGeneratorPluginType;
 
 // -----------------------------------------------------------------------------
@@ -60,8 +59,8 @@ typedef struct __QuickLookGeneratorPluginType
 
 QuickLookGeneratorPluginType  *AllocQuickLookGeneratorPluginType(CFUUIDRef inFactoryID);
 void                         DeallocQuickLookGeneratorPluginType(QuickLookGeneratorPluginType *thisInstance);
-HRESULT                      QuickLookGeneratorQueryInterface(void *thisInstance,REFIID iid,LPVOID *ppv);
-void                        *QuickLookGeneratorPluginFactory(CFAllocatorRef allocator,CFUUIDRef typeID);
+HRESULT                      QuickLookGeneratorQueryInterface(void *thisInstance, REFIID iid, LPVOID *ppv);
+void                        *QuickLookGeneratorPluginFactory(CFAllocatorRef allocator, CFUUIDRef typeID);
 ULONG                        QuickLookGeneratorPluginAddRef(void *thisInstance);
 ULONG                        QuickLookGeneratorPluginRelease(void *thisInstance);
 
@@ -71,14 +70,14 @@ ULONG                        QuickLookGeneratorPluginRelease(void *thisInstance)
 //	The QLGeneratorInterfaceStruct function table.
 //
 static QLGeneratorInterfaceStruct myInterfaceFtbl = {
-    NULL,
-    QuickLookGeneratorQueryInterface,
-    QuickLookGeneratorPluginAddRef,
-    QuickLookGeneratorPluginRelease,
-    NULL,
-    NULL,
-    NULL,
-    NULL
+	NULL,
+	QuickLookGeneratorQueryInterface,
+	QuickLookGeneratorPluginAddRef,
+	QuickLookGeneratorPluginRelease,
+	NULL,
+	NULL,
+	NULL,
+	NULL
 };
 
 
@@ -91,22 +90,18 @@ static QLGeneratorInterfaceStruct myInterfaceFtbl = {
 //
 QuickLookGeneratorPluginType *AllocQuickLookGeneratorPluginType(CFUUIDRef inFactoryID)
 {
-    QuickLookGeneratorPluginType *theNewInstance;
-
-    theNewInstance = (QuickLookGeneratorPluginType *)malloc(sizeof(QuickLookGeneratorPluginType));
-    memset(theNewInstance,0,sizeof(QuickLookGeneratorPluginType));
-
-        /* Point to the function table Malloc enough to store the stuff and copy the filler from myInterfaceFtbl over */
-    theNewInstance->conduitInterface = malloc(sizeof(QLGeneratorInterfaceStruct));
-    memcpy(theNewInstance->conduitInterface,&myInterfaceFtbl,sizeof(QLGeneratorInterfaceStruct));
-
-        /*  Retain and keep an open instance refcount for each factory. */
-    theNewInstance->factoryID = CFRetain(inFactoryID);
-    CFPlugInAddInstanceForFactory(inFactoryID);
-
-        /* This function returns the IUnknown interface so set the refCount to one. */
-    theNewInstance->refCount = 1;
-    return theNewInstance;
+	QuickLookGeneratorPluginType *theNewInstance;
+	theNewInstance = (QuickLookGeneratorPluginType *)malloc(sizeof(QuickLookGeneratorPluginType));
+	memset(theNewInstance, 0, sizeof(QuickLookGeneratorPluginType));
+	/* Point to the function table Malloc enough to store the stuff and copy the filler from myInterfaceFtbl over */
+	theNewInstance->conduitInterface = malloc(sizeof(QLGeneratorInterfaceStruct));
+	memcpy(theNewInstance->conduitInterface, &myInterfaceFtbl, sizeof(QLGeneratorInterfaceStruct));
+	/*  Retain and keep an open instance refcount for each factory. */
+	theNewInstance->factoryID = CFRetain(inFactoryID);
+	CFPlugInAddInstanceForFactory(inFactoryID);
+	/* This function returns the IUnknown interface so set the refCount to one. */
+	theNewInstance->refCount = 1;
+	return theNewInstance;
 }
 
 // -----------------------------------------------------------------------------
@@ -119,18 +114,17 @@ QuickLookGeneratorPluginType *AllocQuickLookGeneratorPluginType(CFUUIDRef inFact
 //
 void DeallocQuickLookGeneratorPluginType(QuickLookGeneratorPluginType *thisInstance)
 {
-    CFUUIDRef theFactoryID;
+	CFUUIDRef theFactoryID;
+	theFactoryID = thisInstance->factoryID;
+	/* Free the conduitInterface table up */
+	free(thisInstance->conduitInterface);
+	/* Free the instance structure */
+	free(thisInstance);
 
-    theFactoryID = thisInstance->factoryID;
-        /* Free the conduitInterface table up */
-    free(thisInstance->conduitInterface);
-
-        /* Free the instance structure */
-    free(thisInstance);
-    if (theFactoryID){
-        CFPlugInRemoveInstanceForFactory(theFactoryID);
-        CFRelease(theFactoryID);
-    }
+	if (theFactoryID) {
+		CFPlugInRemoveInstanceForFactory(theFactoryID);
+		CFRelease(theFactoryID);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -138,31 +132,30 @@ void DeallocQuickLookGeneratorPluginType(QuickLookGeneratorPluginType *thisInsta
 // -----------------------------------------------------------------------------
 //	Implementation of the IUnknown QueryInterface function.
 //
-HRESULT QuickLookGeneratorQueryInterface(void *thisInstance,REFIID iid,LPVOID *ppv)
+HRESULT QuickLookGeneratorQueryInterface(void *thisInstance, REFIID iid, LPVOID *ppv)
 {
-    CFUUIDRef interfaceID;
+	CFUUIDRef interfaceID;
+	interfaceID = CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault, iid);
 
-    interfaceID = CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault,iid);
-
-    if (CFEqual(interfaceID,kQLGeneratorCallbacksInterfaceID)){
-            /* If the Right interface was requested, bump the ref count,
-             * set the ppv parameter equal to the instance, and
-             * return good status.
-             */
-        ((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->GenerateThumbnailForURL = GenerateThumbnailForURL;
-        ((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->CancelThumbnailGeneration = CancelThumbnailGeneration;
-        ((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->GeneratePreviewForURL = GeneratePreviewForURL;
-        ((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->CancelPreviewGeneration = CancelPreviewGeneration;
-        ((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType*)thisInstance)->conduitInterface)->AddRef(thisInstance);
-        *ppv = thisInstance;
-        CFRelease(interfaceID);
-        return S_OK;
-    }else{
-        /* Requested interface unknown, bail with error. */
-        *ppv = NULL;
-        CFRelease(interfaceID);
-        return E_NOINTERFACE;
-    }
+	if (CFEqual(interfaceID, kQLGeneratorCallbacksInterfaceID)) {
+		/* If the Right interface was requested, bump the ref count,
+		 * set the ppv parameter equal to the instance, and
+		 * return good status.
+		 */
+		((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->GenerateThumbnailForURL = GenerateThumbnailForURL;
+		((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->CancelThumbnailGeneration = CancelThumbnailGeneration;
+		((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->GeneratePreviewForURL = GeneratePreviewForURL;
+		((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->CancelPreviewGeneration = CancelPreviewGeneration;
+		((QLGeneratorInterfaceStruct *)((QuickLookGeneratorPluginType *)thisInstance)->conduitInterface)->AddRef(thisInstance);
+		*ppv = thisInstance;
+		CFRelease(interfaceID);
+		return S_OK;
+	} else {
+		/* Requested interface unknown, bail with error. */
+		*ppv = NULL;
+		CFRelease(interfaceID);
+		return E_NOINTERFACE;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -174,8 +167,8 @@ HRESULT QuickLookGeneratorQueryInterface(void *thisInstance,REFIID iid,LPVOID *p
 //
 ULONG QuickLookGeneratorPluginAddRef(void *thisInstance)
 {
-    ((QuickLookGeneratorPluginType *)thisInstance )->refCount += 1;
-    return ((QuickLookGeneratorPluginType*) thisInstance)->refCount;
+	((QuickLookGeneratorPluginType *)thisInstance)->refCount += 1;
+	return ((QuickLookGeneratorPluginType *) thisInstance)->refCount;
 }
 
 // -----------------------------------------------------------------------------
@@ -186,33 +179,34 @@ ULONG QuickLookGeneratorPluginAddRef(void *thisInstance)
 //
 ULONG QuickLookGeneratorPluginRelease(void *thisInstance)
 {
-    ((QuickLookGeneratorPluginType*)thisInstance)->refCount -= 1;
-    if (((QuickLookGeneratorPluginType*)thisInstance)->refCount == 0){
-        DeallocQuickLookGeneratorPluginType((QuickLookGeneratorPluginType*)thisInstance );
-        return 0;
-    }else{
-        return ((QuickLookGeneratorPluginType*) thisInstance )->refCount;
-    }
+	((QuickLookGeneratorPluginType *)thisInstance)->refCount -= 1;
+
+	if (((QuickLookGeneratorPluginType *)thisInstance)->refCount == 0) {
+		DeallocQuickLookGeneratorPluginType((QuickLookGeneratorPluginType *)thisInstance);
+		return 0;
+	} else
+		return ((QuickLookGeneratorPluginType *) thisInstance)->refCount;
 }
 
 // -----------------------------------------------------------------------------
 //  QuickLookGeneratorPluginFactory
 // -----------------------------------------------------------------------------
-void *QuickLookGeneratorPluginFactory(CFAllocatorRef allocator,CFUUIDRef typeID)
+void *QuickLookGeneratorPluginFactory(CFAllocatorRef allocator, CFUUIDRef typeID)
 {
-    QuickLookGeneratorPluginType *result;
-    CFUUIDRef                 uuid;
+	QuickLookGeneratorPluginType *result;
+	CFUUIDRef                 uuid;
 
-        /* If correct type is being requested, allocate an
-         * instance of kQLGeneratorTypeID and return the IUnknown interface.
-         */
-    if (CFEqual(typeID,kQLGeneratorTypeID)){
-        uuid = CFUUIDCreateFromString(kCFAllocatorDefault,CFSTR(PLUGIN_ID));
-        result = AllocQuickLookGeneratorPluginType(uuid);
-        CFRelease(uuid);
-        return result;
-    }
-        /* If the requested type is incorrect, return NULL. */
-    return NULL;
+	/* If correct type is being requested, allocate an
+	 * instance of kQLGeneratorTypeID and return the IUnknown interface.
+	 */
+	if (CFEqual(typeID, kQLGeneratorTypeID)) {
+		uuid = CFUUIDCreateFromString(kCFAllocatorDefault, CFSTR(PLUGIN_ID));
+		result = AllocQuickLookGeneratorPluginType(uuid);
+		CFRelease(uuid);
+		return result;
+	}
+
+	/* If the requested type is incorrect, return NULL. */
+	return NULL;
 }
 

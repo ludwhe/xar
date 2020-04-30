@@ -61,15 +61,15 @@ struct datamod {
 };
 
 typedef struct xar_stream_state {
-        char      *pending_buf;
-        size_t     pending_buf_size;
+	char      *pending_buf;
+	size_t     pending_buf_size;
 
-        void     **modulecontext;
-        int        modulecount;
-        size_t     bsize;
-        int64_t    fsize;
-        xar_t      x;
-        xar_file_t f;
+	void     **modulecontext;
+	int        modulecount;
+	size_t     bsize;
+	int64_t    fsize;
+	xar_t      x;
+	xar_file_t f;
 	xar_prop_t p;
 } xar_stream_state_t;
 

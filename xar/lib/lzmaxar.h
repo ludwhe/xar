@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * 
- * DRI: 
+ *
+ * DRI:
  */
 /*
  * Portions Copyright 2006, Apple Computer, Inc.

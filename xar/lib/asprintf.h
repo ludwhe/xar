@@ -34,59 +34,51 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-static inline int
-vasprintf(char **rResult, const char *aFormat, va_list aAp)
+static inline int vasprintf(char **rResult, const char *aFormat, va_list aAp)
 {
-    int rVal;
-    char *result;
-    va_list ap;
+	int rVal;
+	char *result;
+	va_list ap;
 #define XarAsprintfStartLen 16
+	result = (char *) malloc(XarAsprintfStartLen);
 
-    result = (char *) malloc(XarAsprintfStartLen);
-    if (result == NULL)
-    {
-	rVal = -1;
-	goto RETURN;
-    }
-
-    va_copy(ap, aAp);
-    rVal = vsnprintf(result, XarAsprintfStartLen, aFormat, ap);
-    va_end(ap);
-
-    if (rVal == -1)
-    {
-	goto RETURN;
-    }
-    else if (rVal >= XarAsprintfStartLen)
-    {
-	free(result);
-	result = (char *) malloc(rVal + 1);
-	if (result == NULL)
-	{
-	    rVal = -1;
-	    goto RETURN;
+	if (result == NULL) {
+		rVal = -1;
+		goto RETURN;
 	}
 
 	va_copy(ap, aAp);
-	rVal = vsnprintf(result, rVal + 1, aFormat, aAp);
+	rVal = vsnprintf(result, XarAsprintfStartLen, aFormat, ap);
 	va_end(ap);
-    }
 
-    *rResult = result;
-    RETURN:
+	if (rVal == -1)
+		goto RETURN;
+	else if (rVal >= XarAsprintfStartLen) {
+		free(result);
+		result = (char *) malloc(rVal + 1);
+
+		if (result == NULL) {
+			rVal = -1;
+			goto RETURN;
+		}
+
+		va_copy(ap, aAp);
+		rVal = vsnprintf(result, rVal + 1, aFormat, aAp);
+		va_end(ap);
+	}
+
+	*rResult = result;
+RETURN:
 #undef XarAsprintfStartLen
-    return rVal;
+	return rVal;
 }
 
-static int
-asprintf(char **rResult, const char *aFormat, ...)
+static int asprintf(char **rResult, const char *aFormat, ...)
 {
-    int rVal;
-    va_list ap;
-
-    va_start(ap, aFormat);
-    rVal = vasprintf(rResult, aFormat, ap);
-    va_end(ap);
-
-    return rVal;
+	int rVal;
+	va_list ap;
+	va_start(ap, aFormat);
+	rVal = vasprintf(rResult, aFormat, ap);
+	va_end(ap);
+	return rVal;
 }

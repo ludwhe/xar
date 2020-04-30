@@ -54,13 +54,13 @@ struct __xar_attr_t {
 typedef const struct __xar_attr_t *xar_attr_t;
 
 struct __xar_prop_t {
-        const char *key;
-        const char *value;
-        const struct __xar_prop_t *parent;
-        const struct __xar_prop_t *children;
-        const struct __xar_prop_t *next;
-        const struct __xar_attr_t *attrs;
-        const struct __xar_file_t *file;
+	const char *key;
+	const char *value;
+	const struct __xar_prop_t *parent;
+	const struct __xar_prop_t *children;
+	const struct __xar_prop_t *next;
+	const struct __xar_attr_t *attrs;
+	const struct __xar_file_t *file;
 	const char *prefix;
 	const char *ns;
 };

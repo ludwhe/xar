@@ -3,7 +3,7 @@
  * (c) Apple Computer 1990
  * File assembled by Rob Braun (bbraun@synack.net)
  */
- 
+
 #ifndef __APPLEDOUBLE__
 #define __APPLEDOUBLE__
 
@@ -58,7 +58,7 @@ struct AppleSingleEntry {
 
 /* Valid entry_id values */
 /* Entries 1, 3, and 8 are typically created for all files.
- * Macintosh Icon entries are rare, since those are typically in the resource 
+ * Macintosh Icon entries are rare, since those are typically in the resource
  * fork.
  */
 #define AS_ID_DATA       1  /* Data fork */
@@ -88,7 +88,7 @@ struct MacTimes {
 	uint32_t  access;
 };
 
-/* Finder Information is two 16 byte quantities. 
+/* Finder Information is two 16 byte quantities.
  * Newly created files have all 0's in both entries.
  */
 
@@ -101,7 +101,7 @@ struct MacTimes {
  */
 
 /* AppleDouble files are simply AppleSingle files without the data fork.
- * The magic number is different as a read optimization. 
+ * The magic number is different as a read optimization.
  */
 
 #endif /* __APPLEDOUBLE__ */

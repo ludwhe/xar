@@ -42,8 +42,8 @@
 #include "filetree.h"
 
 
-typedef int32_t (*arcmod_archive)(xar_t x, xar_file_t f, const char* file, const char *buffer, size_t len);
-typedef int32_t (*arcmod_extract)(xar_t x, xar_file_t f, const char* file, char *buffer, size_t len);
+typedef int32_t (*arcmod_archive)(xar_t x, xar_file_t f, const char *file, const char *buffer, size_t len);
+typedef int32_t (*arcmod_extract)(xar_t x, xar_file_t f, const char *file, char *buffer, size_t len);
 
 struct arcmod {
 	arcmod_archive archive;

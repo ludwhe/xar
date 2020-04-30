@@ -50,7 +50,7 @@
 #include "asprintf.h"
 #endif
 
-struct _hash_context{
+struct _hash_context {
 	EVP_MD_CTX *unarchived_cts;
 	EVP_MD_CTX *archived_cts;
 	uint8_t	unarchived;
@@ -60,25 +60,30 @@ struct _hash_context{
 
 #define CONTEXT(x) ((struct _hash_context *)(*x))
 
-static char* xar_format_hash(const unsigned char* m,unsigned int len);
+static char *xar_format_hash(const unsigned char *m, unsigned int len);
 
 static struct _hash_context *context_create(void)
 {
 	struct _hash_context *context;
-	context = (struct _hash_context *)calloc(1,sizeof(struct _hash_context));
+	context = (struct _hash_context *)calloc(1, sizeof(struct _hash_context));
+
 	if (context) {
 		context->unarchived_cts = EVP_MD_CTX_create();
+
 		if (!context->unarchived_cts) {
 			free(context);
 			return NULL;
 		}
+
 		context->archived_cts = EVP_MD_CTX_create();
+
 		if (!context->archived_cts) {
 			EVP_MD_CTX_destroy(context->unarchived_cts);
 			free(context);
 			return NULL;
 		}
 	}
+
 	return context;
 }
 
@@ -91,41 +96,46 @@ static void context_destroy(struct _hash_context *context)
 	}
 }
 
-int32_t xar_hash_unarchived(xar_t x, xar_file_t f, xar_prop_t p, void **in, size_t *inlen, void **context) {
-	return xar_hash_unarchived_out(x,f,p,*in,*inlen,context);
+int32_t xar_hash_unarchived(xar_t x, xar_file_t f, xar_prop_t p, void **in, size_t *inlen, void **context)
+{
+	return xar_hash_unarchived_out(x, f, p, *in, *inlen, context);
 }
 
-int32_t xar_hash_unarchived_out(xar_t x, xar_file_t f, xar_prop_t p, void *in, size_t inlen, void **context) {
+int32_t xar_hash_unarchived_out(xar_t x, xar_file_t f, xar_prop_t p, void *in, size_t inlen, void **context)
+{
 	const char *opt;
 	const EVP_MD *md;
 	xar_prop_t tmpp;
-
 	opt = NULL;
 	tmpp = xar_prop_pget(p, "extracted-checksum");
-	if( tmpp )
+
+	if (tmpp)
 		opt = xar_attr_pget(f, tmpp, "style");
-	
-	if( !opt ) 	
+
+	if (!opt)
 		opt = xar_opt_get(x, XAR_OPT_FILECKSUM);
 
-	if( !opt || (0 == strcmp(opt, XAR_OPT_VAL_NONE) ) )
+	if (!opt || (0 == strcmp(opt, XAR_OPT_VAL_NONE)))
 		return 0;
-	
-	if(!CONTEXT(context)){
+
+	if (!CONTEXT(context)) {
 		*context = context_create();
 		OpenSSL_add_all_digests();
 	}
-	
-	if( !CONTEXT(context)->unarchived ){
+
+	if (!CONTEXT(context)->unarchived) {
 		md = EVP_get_digestbyname(opt);
-		if( md == NULL ) return -1;
+
+		if (md == NULL)
+			return -1;
+
 		EVP_DigestInit_ex(CONTEXT(context)->unarchived_cts, md, NULL);
-		CONTEXT(context)->unarchived = 1;		
+		CONTEXT(context)->unarchived = 1;
 	}
-		
-	if( inlen == 0 )
+
+	if (inlen == 0)
 		return 0;
-	
+
 	CONTEXT(context)->count += inlen;
 	EVP_DigestUpdate(CONTEXT(context)->unarchived_cts, in, (unsigned)inlen);
 	return 0;
@@ -133,38 +143,42 @@ int32_t xar_hash_unarchived_out(xar_t x, xar_file_t f, xar_prop_t p, void *in, s
 
 int32_t xar_hash_archived(xar_t x, xar_file_t f, xar_prop_t p, void **in, size_t *inlen, void **context)
 {
-	return xar_hash_archived_in(x,f,p,*in,*inlen,context);
+	return xar_hash_archived_in(x, f, p, *in, *inlen, context);
 }
 
-int32_t xar_hash_archived_in(xar_t x, xar_file_t f, xar_prop_t p, void *in, size_t inlen, void **context) {
+int32_t xar_hash_archived_in(xar_t x, xar_file_t f, xar_prop_t p, void *in, size_t inlen, void **context)
+{
 	const char *opt;
 	const EVP_MD *md;
 	xar_prop_t tmpp;
-	
 	opt = NULL;
 	tmpp = xar_prop_pget(p, "archived-checksum");
-	if( tmpp )
+
+	if (tmpp)
 		opt = xar_attr_pget(f, tmpp, "style");
-	
-	if( !opt ) 	
+
+	if (!opt)
 		opt = xar_opt_get(x, XAR_OPT_FILECKSUM);
-	
-	if( !opt || (0 == strcmp(opt, XAR_OPT_VAL_NONE) ) )
+
+	if (!opt || (0 == strcmp(opt, XAR_OPT_VAL_NONE)))
 		return 0;
-		
-	if(!CONTEXT(context)){
+
+	if (!CONTEXT(context)) {
 		*context = context_create();
 		OpenSSL_add_all_digests();
 	}
-	
-	if ( !CONTEXT(context)->archived ){
+
+	if (!CONTEXT(context)->archived) {
 		md = EVP_get_digestbyname(opt);
-		if( md == NULL ) return -1;
+
+		if (md == NULL)
+			return -1;
+
 		EVP_DigestInit_ex(CONTEXT(context)->archived_cts, md, NULL);
-		CONTEXT(context)->archived = 1;		
+		CONTEXT(context)->archived = 1;
 	}
 
-	if( inlen == 0 )
+	if (inlen == 0)
 		return 0;
 
 	CONTEXT(context)->count += inlen;
@@ -172,76 +186,83 @@ int32_t xar_hash_archived_in(xar_t x, xar_file_t f, xar_prop_t p, void *in, size
 	return 0;
 }
 
-int32_t xar_hash_done(xar_t x, xar_file_t f, xar_prop_t p, void **context) {
+int32_t xar_hash_done(xar_t x, xar_file_t f, xar_prop_t p, void **context)
+{
 	unsigned char hashstr[HASH_MAX_MD_SIZE];
 	char *str;
 	unsigned int len;
 	xar_prop_t tmpp;
-
 	(void)x;
-	if(!CONTEXT(context))
+
+	if (!CONTEXT(context))
 		return 0;
 
-	if( CONTEXT(context)->count == 0 )
+	if (CONTEXT(context)->count == 0)
 		goto DONE;
 
-	if( CONTEXT(context)->unarchived ){
+	if (CONTEXT(context)->unarchived) {
 		EVP_MD_CTX		*ctx = CONTEXT(context)->unarchived_cts;
 		const EVP_MD			*md = EVP_MD_CTX_md(ctx);
 		const char *type = OBJ_nid2ln(EVP_MD_nid(md));
-
 		memset(hashstr, 0, sizeof(hashstr));
 		EVP_DigestFinal_ex(CONTEXT(context)->unarchived_cts, hashstr, &len);
-		str = xar_format_hash(hashstr,len);
-		if( f ) {
+		str = xar_format_hash(hashstr, len);
+
+		if (f) {
 			tmpp = xar_prop_pset(f, p, "extracted-checksum", str);
-			if( tmpp )
+
+			if (tmpp)
 				xar_attr_pset(f, tmpp, "style", type);
 		}
-		free(str);		
+
+		free(str);
 	}
 
-	if( CONTEXT(context)->archived ){
+	if (CONTEXT(context)->archived) {
 		EVP_MD_CTX				*ctx = CONTEXT(context)->archived_cts;
 		const EVP_MD			*md = EVP_MD_CTX_md(ctx);
 		const char		*type = OBJ_nid2ln(EVP_MD_nid(md));
-		
 		memset(hashstr, 0, sizeof(hashstr));
 		EVP_DigestFinal_ex(CONTEXT(context)->archived_cts, hashstr, &len);
-		str = xar_format_hash(hashstr,len);
-		if( f ) {
+		str = xar_format_hash(hashstr, len);
+
+		if (f) {
 			tmpp = xar_prop_pset(f, p, "archived-checksum", str);
-			if( tmpp )
+
+			if (tmpp)
 				xar_attr_pset(f, tmpp, "style", type);
 		}
+
 		free(str);
 	}
-	
+
 DONE:
-	if(*context){
+
+	if (*context) {
 		context_destroy(CONTEXT(context));
-		*context = NULL;		
+		*context = NULL;
 	}
 
 	return 0;
 }
 
-static char* xar_format_hash(const unsigned char* m,unsigned int len) {
-	char* result = malloc((2*len)+1);
+static char *xar_format_hash(const unsigned char *m, unsigned int len)
+{
+	char *result = malloc((2 * len) + 1);
 	char hexValue[3];
 	unsigned int itr = 0;
-	
 	result[0] = '\0';
-	
-	for(itr = 0;itr < len;itr++){
+
+	for (itr = 0; itr < len; itr++) {
 		snprintf(hexValue, 2, "%02x", m[itr]);
-		strncat(result,hexValue,2);
+		strncat(result, hexValue, 2);
 	}
-		
+
 	return result;
 }
 
-int32_t xar_hash_out_done(xar_t x, xar_file_t f, xar_prop_t p, void **context) {
+int32_t xar_hash_out_done(xar_t x, xar_file_t f, xar_prop_t p, void **context)
+{
 	const char *uncomp = NULL, *uncompstyle = NULL;
 	unsigned char hashstr[HASH_MAX_MD_SIZE];
 	unsigned int len;
@@ -249,38 +270,41 @@ int32_t xar_hash_out_done(xar_t x, xar_file_t f, xar_prop_t p, void **context) {
 	int32_t err = 0;
 	xar_prop_t tmpp;
 
-	if(!CONTEXT(context))
+	if (!CONTEXT(context))
 		return 0;
 
-	if( CONTEXT(context)->archived ){	
+	if (CONTEXT(context)->archived) {
 		tmpp = xar_prop_pget(p, "archived-checksum");
-		if( tmpp ) {
+
+		if (tmpp) {
 			uncompstyle = xar_attr_pget(f, tmpp, "style");
 			uncomp = xar_prop_getvalue(tmpp);
 		}
-		
+
 		md = EVP_get_digestbyname(uncompstyle);
 
-		if( uncomp && uncompstyle && md && CONTEXT(context)->archived ) {
+		if (uncomp && uncompstyle && md && CONTEXT(context)->archived) {
 			char *str;
 			memset(hashstr, 0, sizeof(hashstr));
 			EVP_DigestFinal_ex(CONTEXT(context)->archived_cts, hashstr, &len);
-			str = xar_format_hash(hashstr,len);
-			if(strcmp(uncomp, str) != 0) {
+			str = xar_format_hash(hashstr, len);
+
+			if (strcmp(uncomp, str) != 0) {
 				xar_err_new(x);
 				xar_err_set_file(x, f);
 				xar_err_set_string(x, "archived-checksum message digest hash values do not match");
 				xar_err_callback(x, XAR_SEVERITY_FATAL, XAR_ERR_ARCHIVE_EXTRACTION);
-				err = -1; 
+				err = -1;
 			}
+
 			free(str);
 		}
 	}
-	
-	if( CONTEXT(context)->unarchived )
-	    EVP_DigestFinal_ex(CONTEXT(context)->unarchived_cts, hashstr, &len);
 
-	if(*context){
+	if (CONTEXT(context)->unarchived)
+		EVP_DigestFinal_ex(CONTEXT(context)->unarchived_cts, hashstr, &len);
+
+	if (*context) {
 		context_destroy(CONTEXT(context));
 		*context = NULL;
 	}
