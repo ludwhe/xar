@@ -1,0 +1,190 @@
+# Configuration definition
+conf = configuration_data()
+
+## Check installed programs
+find_program('xml2-config')
+
+## Compiler
+cc = meson.get_compiler('c')
+
+## Check headers
+### Check needed headers
+headers = [
+  'ext2fs/ext2_fs.h',
+  'sys/statfs.h',
+  'sys/xattr.h',
+  'sys/param.h',
+  'sys/extattr.h',
+  'libutil.h',
+  'openssl/evp.h',
+  'libxml/xmlwriter.h'
+]
+foreach header: headers
+  assert(cc.has_header(header),
+    'Could not find ' + header + '.')
+endforeach
+### Check bzlib.h
+if cc.has_header('bzlib.h')
+  conf.set('HAVE_LIBBZ2', true)
+endif
+
+## Check if code compiles
+### acl_t check
+acl_code = '''
+#include <sys/types.h>
+#include <sys/acl.h>
+acl_t a;
+'''
+conf.set('HAVE_SYS_ACL_H', cc.compiles(acl_code))
+
+## Check if functions exist  
+### Mandatory functions 
+funcs = [
+  'lgetxattr', 'lsetxattr', 'getxattr',
+  'setxattr', 'getattrlist', 'setattrlist',
+  'lchmod', 'lchown', 'chflags',
+  'statvfs', 'statfs', 'strmode'
+]
+foreach func: funcs
+  assert(cc.has_function(func, prefix: ''),
+    message: 'Could not find ' + func + '.')
+endforeach
+
+### Check for asprintf
+conf.set('HAVE_ASPRINTF', cc.has_function('asprintf', prefix: ''))
+
+## Check structs members
+structs = [{
+    'name': 'statfs',
+    'member': 'f_fstypename',
+    'prefix': '<sys/types.h> <sys/param.h> <sys/mount.h>'
+  }, {
+    'name': 'statvfs',
+    'member': 'f_fstypename',
+    'prefix': '#include <sys/statvfs.h>'
+  }, {
+    'name': 'stat',
+    'member': 'st_flags',
+    'prefix': ''
+  }
+]
+foreach struct: structs
+  assert(cc.has_member(struct['name'], struct['member'], prefix: struct['prefix']),
+    'Could not find ' + struct + '.')
+endforeach
+
+## Check size of integer types
+### dev_t checks
+dev_sz = cc.sizeof('dev_t', prefix: '')
+if dev_sz == 4
+  conf.set('DEV_STRING', 'PRId32')
+  conf.set('DEV_HEXSTRING', 'PRIx32')
+  conf.set('DEV_CAST', '(uint32_t)')
+elif dev_sz == 8
+  conf.set('DEV_STRING', 'PRId64')
+  conf.set('DEV_HEXSTRING', 'PRIx64')
+  conf.set('DEV_CAST', '(uint64_t)')
+else
+  error('Could not determine known size for dev_t.')
+endif
+
+### gid_t checks
+gid_sz = cc.sizeof('gid_t', prefix: '')
+if dev_sz == 4
+  conf.set('GID_STRING', 'PRId32')
+  conf.set('GID_CAST', '(uint32_t)')
+elif dev_sz == 8
+  conf.set('GID_STRING', 'PRId64')
+  conf.set('GID_CAST', '(uint64_t)')
+else
+  error('Could not determine known size for gid_t.')
+endif
+
+### ino_t checks
+ino_sz = cc.sizeof('ino_t', prefix: '')
+if dev_sz == 4
+  conf.set('INO_STRING', 'PRId32')
+  conf.set('INO_HEXSTRING', 'PRIx32')
+  conf.set('INO_CAST', '(uint32_t)')
+elif dev_sz == 8
+  conf.set('INO_STRING', 'PRId64')
+  conf.set('INO_HEXSTRING', 'PRIx64')
+  conf.set('INO_CAST', '(uint64_t)')
+else
+  error('Could not determine known size for ino_t.')
+endif
+
+### uid_t checks
+uid_sz = cc.sizeof('uid_t', prefix: '#include <header.h>')
+if dev_sz == 4
+  conf.set('UID_STRING', 'PRId32')
+  conf.set('UID_CAST', '(uint32_t)')
+elif dev_sz == 8
+  conf.set('UID_STRING', 'PRId64')
+  conf.set('UID_CAST', '(uint64_t)')
+else
+  error('Could not determine known size for uid_t.')
+endif
+
+## Check host system
+host_system = host_machine.system()
+if host_system == 'darwin'
+  abi = 'macho'
+  rpath = ''
+elif host_system == 'linux'
+  abi = 'elf'
+  cppflags += '-D_GNU_SOURCE'
+  rpath = '-Wl,-rpath,'
+elif host_system == 'freebsd'
+  abi = 'elf'
+  rpath = '-Wl,-rpath,'
+elif host_system == 'sunos'
+  abi = 'elf'
+  rpath = '-Wl,R'
+  #cppflags += '-D_POSIX_PTHREAD_SEMANTICS'
+  #libs += '-lposix4 -lsocket -lnsl'
+elif host_system == 'netbsd'
+  aout_code = '''
+    #ifdef __ELF__
+    /* ELF */
+    #else
+    #error aout
+    #endif
+  '''
+  if cc.compiles(aout_code)
+    abi = 'elf'
+  else
+    abi = 'aout'
+  endif
+  rpath = '-Wl,-rpath,'
+else
+  abi = 'elf'
+  rpath = '-Wl,-rpath,'
+endif
+
+configure_file(
+  output : 'include/config.h',
+  configuration : conf
+)
+
+# Build definition
+inc = include_directories('include')
+
+subdir('include')
+subdir('src')
+subdir('test')
+
+pkg_mod = import('pkgconfig')
+pkg_mod.generate(
+  libraries: xar,
+  version: '1.0',
+  name: 'libxar',
+  filebase: 'xar',
+  description: 'A library to handle xar files.'
+)
+
+xar = executable(
+  'xar',
+  'xar.c',
+  include_directories: inc
+)

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2005-2007 Rob Braun
  * All rights reserved.
  *

@@ -1,4 +1,5 @@
-/* Information pulled from:
+/**
+ * Information pulled from:
  * "AppleSingle/AppleDouble Formats for Foreign Files Developer's Note"
  * (c) Apple Computer 1990
  * File assembled by Rob Braun (bbraun@synack.net)
@@ -14,24 +15,25 @@
 #include <inttypes.h>
 #endif
 
-/* Structure of an AppleSingle file:
- *   ----------------------
- *   | AppleSingleHeader  |
- *   |--------------------|
- *   | ASH.entries # of   |
- *   | AppleSingleEntry   |
- *   | Descriptors        |
- *   |         1          |
- *   |         .          |
- *   |         .          |
- *   |         n          |
- *   |--------------------|
- *   |   Datablock 1      |
- *   |--------------------|
- *   |   Datablock 2      |
- *   |--------------------|
- *   |   Datablock n      |
- *   ----------------------
+/**
+ * Structure of an AppleSingle file:
+ * 	----------------------
+ * 	| AppleSingleHeader  |
+ * 	|--------------------|
+ * 	| ASH.entries # of   |
+ * 	| AppleSingleEntry   |
+ * 	| Descriptors        |
+ * 	|         1          |
+ * 	|         .          |
+ * 	|         .          |
+ * 	|         n          |
+ * 	|--------------------|
+ * 	|   Datablock 1      |
+ * 	|--------------------|
+ * 	|   Datablock 2      |
+ * 	|--------------------|
+ * 	|   Datablock n      |
+ * 	----------------------
  */
 
 struct AppleSingleHeader {
